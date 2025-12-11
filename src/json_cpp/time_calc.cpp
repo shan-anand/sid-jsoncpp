@@ -57,12 +57,12 @@ void time_calc::stop()
   t_end = p_capture();
 }
 
-inline uint64_t time_calc::diff_secs() const
+uint64_t time_calc::diff_secs() const
 {
   return diff_millisecs() / 1000;
 }
 
-inline uint64_t time_calc::diff_millisecs() const
+uint64_t time_calc::diff_millisecs() const
 {
   return diff_microsecs() / 1000;
 }

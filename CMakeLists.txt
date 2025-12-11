@@ -32,6 +32,10 @@ set(HEADERS
 # Create the library
 add_library(json_cpp ${SOURCES} ${HEADERS})
 
+add_executable(json_cpp_client
+  src/client/json_cpp_client.cpp
+  $<TARGET_OBJECTS:json_cpp>
+)
 # Set library properties
 set_target_properties(json_cpp PROPERTIES
     VERSION ${PROJECT_VERSION}
