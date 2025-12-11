@@ -1,6 +1,6 @@
 # json_cpp
 
-A high-performance JSON parser and serializer library for C++11 and later.
+A high-performance JSON parser and serializer library for C++17 and later.
 
 ## Overview
 
@@ -9,7 +9,7 @@ json_cpp is a fast, lightweight JSON library that provides comprehensive JSON pa
 ## Features
 
 - **High Performance**: Optimized for speed with minimal memory overhead
-- **C++11 Compatible**: Works with modern C++ standards
+- **C++17 Compatible**: Works with modern C++ standards
 - **Flexible Parsing**: Support for relaxed JSON syntax including unquoted keys and values
 - **Multiple Data Types**: Full support for all JSON types (null, boolean, numbers, strings, arrays, objects)
 - **Detailed Statistics**: Built-in parsing statistics and timing information
