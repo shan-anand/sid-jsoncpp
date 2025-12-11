@@ -49,7 +49,7 @@ LICENSE: END
 using namespace json;
 using namespace std;
 
-extern uint64_t json_gobjects_alloc;
+//extern uint64_t json_gobjects_alloc;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -649,13 +649,27 @@ value::union_data::~union_data()
 {
 }
 
+#include <iostream>
+using namespace std;
 value_type value::union_data::clear(const value_type _type)
 {
   switch ( _type )
   {
   case value_type::string: _str.~string(); break;
-  case value_type::array:  _arr.~array_t(); break;
-  case value_type::object: delete _map; _map = nullptr; break;
+  case value_type::array:
+    // Iteratively delete all entries
+    for ( auto& entry : _arr )
+      entry.clear();
+    _arr.~array_t();
+    break;
+  case value_type::object:
+    // Iteratively delete all entries
+    for ( auto& entry : *_map )
+      entry.second.clear();
+    delete _map;
+    _map = nullptr;
+    //--json_gobjects_alloc;
+    break;
   default: break;
   }
   return value_type::null;
@@ -672,7 +686,7 @@ value_type value::union_data::init(const value_type _type/* = value_type::null*/
   case value_type::_double:   _dbl = 0; break;
   case value_type::boolean:   _bval = false; break;
   case value_type::array:     new (&_arr) array_t; break;
-  case value_type::object:    _map = new object_t; ++json_gobjects_alloc; break;
+  case value_type::object:    _map = new object_t; /*++json_gobjects_alloc;*/ break;
   }
   return _type;
 }
@@ -750,7 +764,7 @@ value_type value::union_data::init(const object_t& _val, const bool _new/* = tru
   if ( _new )
   {
     _map = new object_t(_val);
-    ++json_gobjects_alloc;
+    /*++json_gobjects_alloc;*/
   }
   else
     *_map = _val;

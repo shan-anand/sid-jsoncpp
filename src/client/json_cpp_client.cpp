@@ -18,11 +18,11 @@ int main(int argc, char* argv[])
   {
     if ( argc < 2 )
       throw std::invalid_argument("Need filename as an argument");
-
+    /*
     cout << "sizeof(json::value) = " << sizeof(json::value) << endl;
     cout << "sizeof(json::schema) = " << sizeof(json::schema) << endl;
     cout << "sizeof(json::schema::property) = " << sizeof(json::schema::property) << endl;
-
+    */
     std::string param, key, value;
     json::parser_control ctrl;
     std::optional<json::format> outputFmt;
@@ -78,13 +78,15 @@ int main(int argc, char* argv[])
     }
     std::string jsonStr = local::get_file_contents(argv[1]);
     json::parser_stats stats;
-    json::value jroot;
-  	json::value::parse(jroot, stats, jsonStr, ctrl);
-    cout << stats.to_str() << endl;
-    if ( showOutput )
     {
-      cout << (outputFmt.has_value()? jroot.to_str(outputFmt.value()) : jroot.to_str()) << endl;
+      json::value jroot;
+      json::value::parse(jroot, stats, jsonStr, ctrl);
+      if ( showOutput )
+      {
+        cout << (outputFmt.has_value()? jroot.to_str(outputFmt.value()) : jroot.to_str()) << endl;
+      }
     }
+    cout << stats.to_str() << endl;
     retVal = 0;
   }
   catch(const std::exception& e)

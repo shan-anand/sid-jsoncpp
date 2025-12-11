@@ -40,6 +40,7 @@ namespace json {
 
 struct parser_stats
 {
+  size_t   data_size;
   uint64_t objects;
   uint64_t arrays;
   uint64_t strings;

@@ -45,7 +45,7 @@ LICENSE: END
 using namespace json;
 using namespace std;
 
-uint64_t json_gobjects_alloc = 0;
+//uint64_t json_gobjects_alloc = 0;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -59,6 +59,7 @@ parser_stats::parser_stats()
 
 void parser_stats::clear()
 {
+  data_size = 0;
   objects = 0;
   arrays = 0;
   strings = 0;
@@ -72,8 +73,9 @@ void parser_stats::clear()
 std::string parser_stats::to_str() const
 {
   std::ostringstream out;
-  out << "objects.......: " << json::get_sep(objects)
-      << " (" << json::get_sep(json_gobjects_alloc) << ")" << endl
+  out << "data size.....: " << json::get_sep(data_size) << " bytes" << endl
+      << "objects.......: " << json::get_sep(objects) << endl
+//      << " (" << json::get_sep(json_gobjects_alloc) << ")" << endl
       << "arrays........: " << json::get_sep(arrays) << endl
       << "strings.......: " << json::get_sep(strings) << endl
       << "numbers.......: " << json::get_sep(numbers) << endl

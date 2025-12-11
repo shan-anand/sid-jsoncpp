@@ -50,7 +50,7 @@ using namespace json;
 
 //#define REMOVE_LEADING_SPACES(p)  for (; ::isspace(*p) && *p != '\0'; p++ );
 
-extern uint64_t json_gobjects_alloc;
+//extern uint64_t json_gobjects_alloc;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -164,6 +164,8 @@ bool parser::parse(const std::string& _value)
 
     m_jroot.clear();
     m_stats.clear();
+    // Set the size of the data
+    m_stats.data_size = _value.length();
 
     m_input = _value;
     m_p = m_line.begin = m_input.c_str();
