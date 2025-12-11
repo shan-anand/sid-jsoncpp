@@ -37,7 +37,6 @@ LICENSE: END
 #include "json_cpp/schema.h"
 #include "json_cpp/parser_stats.h"
 #include "json_cpp/parser_control.h"
-#include "convert.h"
 #include <stack>
 #include <string>
 #include <cstdint>
@@ -76,7 +75,7 @@ private:
 
   //! get the current location of paring in the string
   inline std::string loc_str(const line_info& line, const char* p) const {
-    return std::string("@line:") + json::to_str(line.count) + ", @pos:" + json::to_str(p-line.begin+1);
+    return std::string("@line:") + std::to_string(line.count) + ", @pos:" + std::to_string(p-line.begin+1);
   }
   inline std::string loc_str(const line_info& line) const { return loc_str(line, m_p); }
   inline std::string loc_str(const char* p) const { return loc_str(m_line, p); }

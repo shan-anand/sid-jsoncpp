@@ -37,7 +37,7 @@ LICENSE: END
  * @brief Implementation of format structure
  */
 #include "json_cpp/format.h"
-#include "convert.h"
+#include "utils.h"
 #include <sstream>
 #include <string>
 #include <iomanip>
@@ -146,8 +146,8 @@ std::string format::to_str() const
     out << ":indent=" << this->indent;
   }
   if ( this->key_no_quotes )
-    out << ":key_no_quotes=" << json::to_str(this->key_no_quotes);
+    out << ":key_no_quotes=" << json::to_string(this->key_no_quotes);
   if ( this->string_no_quotes )
-    out << ":string_no_quotes=" << json::to_str(this->string_no_quotes);
+    out << ":string_no_quotes=" << json::to_string(this->string_no_quotes);
   return out.str();
 }

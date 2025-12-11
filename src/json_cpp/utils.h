@@ -4,7 +4,6 @@ LICENSE: BEGIN
 @author Shan Anand
 @email anand.gs@gmail.com
 @source https://github.com/shan-anand
-@file json.cpp
 @brief Json handling using c++
 ===============================================================================
 MIT License
@@ -32,56 +31,31 @@ SOFTWARE.
 LICENSE: END
 */
 
-/**
- * @file  parser_stats.cpp
- * @brief Implementation of json parser statistics
- */
-#include "json_cpp/schema.h"
-#include "utils.h"
-#include "parser.h"
-#include <sstream>
-#include <iomanip>
+#pragma once
 
-using namespace json;
-using namespace std;
+#include <string>
+#include <cstdint>
+#include <vector>
 
-uint64_t json_gobjects_alloc = 0;
+#define SPLIT_TRIM          0x01
+#define SPLIT_SKIP_EMPTY    0x02
+#define SPLIT_TRIM_SKIP_EMPTY  (SPLIT_TRIM | SPLIT_SKIP_EMPTY)
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Implementation of parser_stats
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////
-parser_stats::parser_stats()
-{
-  clear();
-}
+namespace json {
 
-void parser_stats::clear()
-{
-  objects = 0;
-  arrays = 0;
-  strings = 0;
-  numbers = 0;
-  booleans = 0;
-  nulls = 0;
-  keys = 0;
-  time_ms = 0;
-}
+std::string to_string(bool _value);
+bool to_bool(const std::string& _str);
+bool to_bool(const std::string& _str, bool& _out, std::string* _pstrError = nullptr);
+bool to_num(const std::string& _str, long double& _out, std::string* _pstrError = nullptr);
+bool to_num(const std::string& _str, uint32_t& _out, std::string* _pstrError = nullptr);
+bool to_num(const std::string& _str, int64_t& _out, std::string* _pstrError = nullptr);
+bool to_num(const std::string& _str, uint64_t& _out, std::string* _pstrError = nullptr);
+std::string get_sep(uint64_t _number);
+size_t split(
+  std::vector<std::string>& _out,
+  const std::string&        _str,
+  const char                _delimiter,
+  const uint32_t            _options = 0
+);
 
-std::string parser_stats::to_str() const
-{
-  std::ostringstream out;
-  out << "objects.......: " << json::get_sep(objects)
-      << " (" << json::get_sep(json_gobjects_alloc) << ")" << endl
-      << "arrays........: " << json::get_sep(arrays) << endl
-      << "strings.......: " << json::get_sep(strings) << endl
-      << "numbers.......: " << json::get_sep(numbers) << endl
-      << "booleans......: " << json::get_sep(booleans) << endl
-      << "nulls.........: " << json::get_sep(nulls) << endl
-      << "(keys)........: " << json::get_sep(keys) << endl
-      << "(time taken)..: " << json::get_sep(time_ms/1000)
-      << "." << std::setfill('0') << std::setw(3) << (time_ms % 1000) << " seconds" << endl
-    ;
-  return out.str();
-}
+} // namespace json

@@ -38,7 +38,7 @@ LICENSE: END
  */
 #include "json_cpp/value.h"
 #include "json_cpp/schema.h"
-#include "convert.h"
+#include "utils.h"
 #include "parser.h"
 #include <fstream>
 #include <stack>
@@ -362,13 +362,13 @@ std::string value::as_str() const
   if ( is_string() )
     return m_data._str;
   else if ( is_bool() )
-    return json::to_str(m_data._bval);
+    return json::to_string(m_data._bval);
   else if ( is_signed() )
-    return json::to_str(m_data._i64);
+    return std::to_string(m_data._i64);
   else if ( is_unsigned() )
-    return json::to_str(m_data._u64);
+    return std::to_string(m_data._u64);
   else if ( is_double() )
-    return json::to_str(m_data._dbl);
+    return std::to_string(m_data._dbl);
   throw std::runtime_error(
     __func__ + std::string("() can be used only for string, number or boolean types"));
 }
@@ -568,8 +568,8 @@ const value& value::operator[](const size_t _index) const
   if ( ! is_array() )
     throw std::runtime_error(__func__ + std::string(": can be used only for array type"));
   if ( _index >= m_data._arr.size() )
-    throw std::runtime_error(__func__ + std::string(": index(") + json::to_str(_index)
-                         + ") out of range(" + json::to_str(m_data._arr.size()) + ")");
+    throw std::runtime_error(__func__ + std::string(": index(") + std::to_string(_index)
+                         + ") out of range(" + std::to_string(m_data._arr.size()) + ")");
   return m_data._arr[_index];
 }
 
@@ -578,8 +578,8 @@ value& value::operator[](const size_t _index)
   if ( ! is_array() )
     throw std::runtime_error(__func__ + std::string(": can be used only for array type"));
   if ( _index >= m_data._arr.size() )
-    throw std::runtime_error(__func__ + std::string(": index(") + json::to_str(_index)
-                         + ") out of range(" + json::to_str(m_data._arr.size()) + ")");
+    throw std::runtime_error(__func__ + std::string(": index(") + std::to_string(_index)
+                         + ") out of range(" + std::to_string(m_data._arr.size()) + ")");
   return m_data._arr[_index];
 }
 

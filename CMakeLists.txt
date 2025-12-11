@@ -10,7 +10,7 @@ include_directories(include)
 
 # Source files
 set(SOURCES
-    src/json_cpp/convert.cpp
+    src/json_cpp/utils.cpp
     src/json_cpp/format.cpp
     src/json_cpp/parser.cpp
     src/json_cpp/parser_stats.cpp
