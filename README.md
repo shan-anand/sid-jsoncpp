@@ -84,6 +84,25 @@ make
 
 This will create a `libsid-json` library that can be linked to your projects.
 
+### Installation
+```bash
+# Install to system directories (requires sudo)
+sudo make install
+
+# Or install to custom location (no sudo needed)
+cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local ..
+make install
+```
+
+### Uninstallation
+```bash
+# Uninstall from system directories (requires sudo)
+sudo make uninstall
+
+# Or uninstall from custom location (no sudo needed)
+make uninstall
+```
+
 ### Integration
 Add to your CMakeLists.txt:
 ```cmake

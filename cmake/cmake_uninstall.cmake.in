@@ -1,0 +1,55 @@
+if(NOT EXISTS "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt")
+  message(FATAL_ERROR "Cannot find install manifest: @CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt")
+endif()
+
+file(READ "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt" files)
+string(REGEX REPLACE "\n" ";" files "${files}")
+set(dirs_to_check)
+foreach(file ${files})
+  message(STATUS "Uninstalling $ENV{DESTDIR}${file}")
+  if(IS_SYMLINK "$ENV{DESTDIR}${file}" OR EXISTS "$ENV{DESTDIR}${file}")
+    get_filename_component(dir "$ENV{DESTDIR}${file}" DIRECTORY)
+    list(APPEND dirs_to_check "${dir}")
+    exec_program(
+      "@CMAKE_COMMAND@" ARGS "-E remove \"$ENV{DESTDIR}${file}\""
+      OUTPUT_VARIABLE rm_out
+      RETURN_VALUE rm_retval
+      )
+    if(NOT "${rm_retval}" STREQUAL 0)
+      message(FATAL_ERROR "Problem when removing $ENV{DESTDIR}${file}")
+    endif()
+  else()
+    message(STATUS "File $ENV{DESTDIR}${file} does not exist.")
+  endif()
+endforeach()
+
+# Remove empty directories (including parent directories)
+list(REMOVE_DUPLICATES dirs_to_check)
+set(all_dirs_to_check ${dirs_to_check})
+# Add parent directories
+foreach(dir ${dirs_to_check})
+  get_filename_component(parent "${dir}" DIRECTORY)
+  get_filename_component(parent_name "${parent}" NAME)
+  while(NOT "${parent}" STREQUAL "${dir}" AND NOT "${parent}" STREQUAL "/" AND NOT "${parent}" MATCHES "^[A-Za-z]:/?$" AND NOT "${parent_name}" STREQUAL "include" AND NOT "${parent_name}" STREQUAL "lib" AND NOT "${parent_name}" STREQUAL "bin")
+    list(APPEND all_dirs_to_check "${parent}")
+    set(dir "${parent}")
+    get_filename_component(parent "${dir}" DIRECTORY)
+    get_filename_component(parent_name "${parent}" NAME)
+  endwhile()
+endforeach()
+list(REMOVE_DUPLICATES all_dirs_to_check)
+list(SORT all_dirs_to_check)
+list(REVERSE all_dirs_to_check)
+foreach(dir ${all_dirs_to_check})
+  if(IS_DIRECTORY "${dir}")
+    file(GLOB dir_contents "${dir}/*")
+    if(NOT dir_contents)
+      message(STATUS "Removing empty directory ${dir}")
+      exec_program(
+        "@CMAKE_COMMAND@" ARGS "-E remove_directory \"${dir}\""
+        OUTPUT_VARIABLE rmdir_out
+        RETURN_VALUE rmdir_retval
+        )
+    endif()
+  endif()
+endforeach()
