@@ -220,5 +220,5 @@ MIT License - see LICENSE file for details.
 
 ## Author
 
-Shan Anand (anand.gs@gmail.com)
+Shan Anand (anand.gs@gmail.com)  
 Source: https://github.com/shan-anand/sid-jsoncpp
