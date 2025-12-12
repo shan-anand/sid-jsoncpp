@@ -178,15 +178,6 @@ The library is optimized for performance with:
 - Fast numeric parsing
 - Built-in timing measurements
 
-## License
-
-MIT License - see LICENSE file for details.
-
-## Author
-
-Shan Anand (anand.gs@gmail.com)  
-Source: https://github.com/shan-anand
-
 ## Client (sid-jsoncpp-client)
 
 The sid-jsoncpp library includes a command-line client application for parsing and validating JSON files.
@@ -222,3 +213,12 @@ Examples:
   echo '{"key":"value"}' | sid-jsoncpp-client     # Parse from stdin
   cat ./data.json | sid-jsoncpp-client -o # Parse stdin and show output
 ```
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Author
+
+Shan Anand (anand.gs@gmail.com)
+Source: https://github.com/shan-anand/sid-jsoncpp
