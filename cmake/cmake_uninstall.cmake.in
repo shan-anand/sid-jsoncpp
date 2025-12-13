@@ -10,10 +10,10 @@ foreach(file ${files})
   if(IS_SYMLINK "$ENV{DESTDIR}${file}" OR EXISTS "$ENV{DESTDIR}${file}")
     get_filename_component(dir "$ENV{DESTDIR}${file}" DIRECTORY)
     list(APPEND dirs_to_check "${dir}")
-    exec_program(
-      "@CMAKE_COMMAND@" ARGS "-E remove \"$ENV{DESTDIR}${file}\""
+    execute_process(
+      COMMAND "@CMAKE_COMMAND@" -E remove "$ENV{DESTDIR}${file}"
       OUTPUT_VARIABLE rm_out
-      RETURN_VALUE rm_retval
+      RESULT_VARIABLE rm_retval
       )
     if(NOT "${rm_retval}" STREQUAL 0)
       message(FATAL_ERROR "Problem when removing $ENV{DESTDIR}${file}")
@@ -45,10 +45,10 @@ foreach(dir ${all_dirs_to_check})
     file(GLOB dir_contents "${dir}/*")
     if(NOT dir_contents)
       message(STATUS "Removing empty directory ${dir}")
-      exec_program(
-        "@CMAKE_COMMAND@" ARGS "-E remove_directory \"${dir}\""
+      execute_process(
+        COMMAND "@CMAKE_COMMAND@" -E remove_directory "${dir}"
         OUTPUT_VARIABLE rmdir_out
-        RETURN_VALUE rmdir_retval
+        RESULT_VARIABLE rmdir_retval
         )
     endif()
   endif()

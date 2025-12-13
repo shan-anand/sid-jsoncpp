@@ -44,9 +44,10 @@ set_target_properties(sid-json PROPERTIES
 )
 
 # Install targets
-install(TARGETS sid-json
+install(TARGETS sid-json sid-json-client
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
 )
 
 install(DIRECTORY include/sid

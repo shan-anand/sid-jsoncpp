@@ -36,6 +36,7 @@ LICENSE: END
 #include <fstream>
 #include <cstring>
 #include <stdexcept>
+#include <unistd.h>
 
 using namespace std;
 using namespace sid;
@@ -141,8 +142,13 @@ int main(int argc, char* argv[])
     std::string data;
     if ( !filename.has_value() )
     {
+      // Check if stdin is from terminal (interactive) or pipe
+      if ( ::isatty(STDIN_FILENO) )
+      {
+        // Interactive mode - show instruction
+        cerr << "Reading multiple lines from stdin. End it with Ctrl+D" << endl;
+      }
       // Get data from stdin
-      cerr << "Reading multiple lines from stdin. End it with Ctrl+D" << endl;
       for ( std::string line; getline(cin, line); data += line);
       data = local::trim(data);
       if ( data.empty() ) return -1;
