@@ -233,8 +233,8 @@ Examples:
   sid-json-client -o=pretty ./data.json     # Parse and show pretty output
   sid-json-client -k -s ./data.json         # Allow flexible keys and strings
   sid-json-client --dup=append ./data.json  # Append duplicate keys
-  echo '{"key":"value"}' | sid-json-client     # Parse from stdin (pipe)
-  cat ./data.json | sid-json-client -o # Parse stdin and show output (pipe)
+  echo '{"key":"value"}' | sid-json-client  # Parse from stdin (pipe)
+  cat ./data.json | sid-json-client -o      # Parse stdin (pipe) and show output
 ```
 
 ## License

@@ -240,8 +240,8 @@ void local::show_usage(const char* _progName)
        << "  " << _progName << " -o=pretty ./data.json     # Parse and show pretty output" << endl
        << "  " << _progName << " -k -s ./data.json         # Allow flexible keys and strings" << endl
        << "  " << _progName << " --dup=append ./data.json  # Append duplicate keys" << endl
-       << "  echo '{\"key\":\"value\"}' | " << _progName << "     # Parse from stdin (pipe)" << endl
-       << "  cat ./data.json | " << _progName << " -o # Parse stdin and show output (pipe)" << endl;
+       << "  echo '{\"key\":\"value\"}' | " << _progName << "  # Parse from stdin (pipe)" << endl
+       << "  cat ./data.json | " << _progName << " -o      # Parse stdin (pipe) and show output" << endl;
 }
 
 std::string local::trim(const std::string& _str)
