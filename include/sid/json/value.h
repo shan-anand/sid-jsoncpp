@@ -46,7 +46,7 @@ LICENSE: END
 namespace sid::json {
 
 //! json value type
-enum value_type : uint8_t {
+enum class value_type : uint8_t {
   null, object, array, string, boolean, _signed, _unsigned, _double
 };
 std::string to_str(const value_type& _type);
