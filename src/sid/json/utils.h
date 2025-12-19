@@ -58,4 +58,17 @@ size_t split(
   const uint32_t            _options = 0
 );
 
+//! Number information structure
+struct number_info
+{
+  struct s_integer
+  {
+    bool     negative = false;
+    uint64_t digits = 0;
+  };
+  s_integer integer;
+  bool hasFraction = false;
+  bool hasExponent = false;
+};
+
 } // namespace sid::json

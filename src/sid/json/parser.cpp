@@ -457,7 +457,7 @@ void parser::parse_value(value& _jval)
   else if ( ch == '\"' )
     parse_string(_jval, false);
   else if ( ch == '-' || ::isdigit(ch) )
-    parse_number(_jval, true);
+    parse_number(_jval);
   else if ( ch == '\0' )
     throw std::runtime_error("Unexpected end of data while expecting a value");
   else
@@ -535,92 +535,63 @@ void parser::parse_value(value& _jval)
   skip_leading_spaces(m_p);
 }
 
-void parser::parse_number(value& _jnum, bool bFullCheck)
+void parser::parse_number(value& _jnum)
 {
   skip_leading_spaces(m_p);
   const char* p_start = m_p;
-  bool isDouble = false;
-  bool isNegative = false;
   const char chContainer = (m_containerStack.top() == value_type::object)? '}' : ']' ;
 
-  if ( ! bFullCheck )
+  number_info num;
+  // Perform full check and get the number
+  if ( (num.integer.negative = (*m_p == '-')) )
+    ++m_p;
+  char ch = *m_p;
+  if ( ch < '0' || ch > '9' )
+    throw std::runtime_error("Missing integer digit" + loc_str());
+
+  if ( ch == '0' )
   {
-    isNegative = (*m_p == '-');
-    for ( ; *m_p != '\0'; m_p++ )
-    {
-      if ( *m_p == ',' || is_space(m_p) ||  *m_p == chContainer )
-        break;
-      if ( !isDouble && (*m_p == '.' || *m_p == 'e' || *m_p == 'E') )
-        isDouble = true;
-    }
+    ch = *(++m_p);
+    if ( ch >= '0' && ch <= '9' )
+      throw std::runtime_error("Invalid digit (" + std::string(1, ch) + ") after first 0 " + loc_str());
+    num.integer.digits = 0;
   }
   else
   {
-    // Perform full check and get the number
-    struct number
-    {
-      struct s_integer
-      {
-        bool     negative = false;
-        uint64_t digits = 0;
-      };
-      s_integer integer;
-      bool hasFraction = false;
-      bool hasExponent = false;
-    };
-    number num;
-
-    if ( (num.integer.negative = (*m_p == '-')) )
-      ++m_p;
-    char ch = *m_p;
-    if ( ch < '0' || ch > '9' )
-      throw std::runtime_error("Missing integer digit" + loc_str());
-
-    if ( ch == '0' )
-    {
-      ch = *(++m_p);
-      if ( ch >= '0' && ch <= '9' )
-        throw std::runtime_error("Invalid digit (" + std::string(1, ch) + ") after first 0 " + loc_str());
-      num.integer.digits = 0;
-    }
-    else
-    {
-      while ( (ch = *(++m_p)) >= '0' && ch <= '9'  )
-        ;
-    }
-    // Check whether it has fraction and populate accordingly
-    if ( ch == '.' )
-    {
-      bool hasDigits = false;
-      while ( (ch = *(++m_p)) >= '0' && ch <= '9'  )
-        hasDigits = true;
-      if ( !hasDigits )
-        throw std::runtime_error("Invalid digit (" + std::string(1, ch)
-                             + ") Expected a digit for fraction " + loc_str());
-      num.hasFraction = true;
-    }
-    // Check whether it has an exponent and populate accordingly
-    if ( ch == 'e' || ch == 'E' )
-    {
-      ch = *(++m_p);
-      if ( ch != '-' && ch != '+' )
-        --m_p;
-      bool hasDigits = false;
-      while ( (ch = *(++m_p)) >= '0' && ch <= '9'  )
-        hasDigits = true;
-      if ( !hasDigits )
-        throw std::runtime_error("Invalid digit (" + std::string(1, ch)
-                             + ") Expected a digit for exponent " + loc_str());
-      num.hasExponent = true;
-    }
-
-    isNegative = num.integer.negative;
-    isDouble = ( num.hasFraction || num.hasExponent );
+    while ( (ch = *(++m_p)) >= '0' && ch <= '9'  )
+      ;
+  }
+  // Check whether it has fraction and populate accordingly
+  if ( ch == '.' )
+  {
+    bool hasDigits = false;
+    while ( (ch = *(++m_p)) >= '0' && ch <= '9'  )
+      hasDigits = true;
+    if ( !hasDigits )
+      throw std::runtime_error("Invalid digit (" + std::string(1, ch)
+                            + ") Expected a digit for fraction " + loc_str());
+    num.hasFraction = true;
+  }
+  // Check whether it has an exponent and populate accordingly
+  if ( ch == 'e' || ch == 'E' )
+  {
+    ch = *(++m_p);
+    if ( ch != '-' && ch != '+' )
+      --m_p;
+    bool hasDigits = false;
+    while ( (ch = *(++m_p)) >= '0' && ch <= '9'  )
+      hasDigits = true;
+    if ( !hasDigits )
+      throw std::runtime_error("Invalid digit (" + std::string(1, ch)
+                            + ") Expected a digit for exponent " + loc_str());
+    num.hasExponent = true;
   }
 
+  const bool isNegative = num.integer.negative;
+  const bool isDouble = ( num.hasFraction || num.hasExponent );
   const char* p_end = m_p;
   skip_leading_spaces(m_p);
-  char ch = *m_p;
+  ch = *m_p;
   if ( ch != ',' && ch != '\0' && ch != chContainer )
     throw std::runtime_error("Invalid character " + std::string(1, ch) + " Expected , or "
                          + std::string(1, chContainer) + " " + loc_str());

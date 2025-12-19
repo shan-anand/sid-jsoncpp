@@ -92,7 +92,7 @@ private:
   void parse_string(std::string& _str, bool _isKey);
   void parse_string(value& _jstr, bool _isKey);
   //! parser number
-  void parse_number(value& _jnum, bool bFullCheck);
+  void parse_number(value& _jnum);
   //! parse json value
   void parse_value(value& _jval);
 
