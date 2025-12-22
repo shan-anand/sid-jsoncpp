@@ -7,7 +7,7 @@ This directory contains comprehensive unit tests for the sid-json library using 
 - `test_main.cpp` - Test runner and main entry point
 - `test_value.cpp` - Tests for JSON value operations (types, conversions, containers)
 - `test_parser.cpp` - Tests for JSON parsing (objects, arrays, errors, duplicate keys)
-- `test_format.cpp` - Tests for JSON output formatting (compact, pretty, escaping)
+- `test_schema.cpp` - Tests for JSON schema validation and parsing
 
 ## Prerequisites
 
@@ -34,13 +34,38 @@ cmake -DBUILD_TESTING=ON ..
 make
 
 # Run all tests
-make test
+ctest
 
 # Run with verbose output
 ctest --verbose
 
 # Run specific test executable directly
 ./tests/sid-json-tests
+```
+
+## Code Coverage
+
+```bash
+# Build with coverage (Debug mode required)
+cmake -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Debug ..
+make
+
+# Run tests to generate coverage data
+ctest
+
+# Generate coverage report
+# For GCC:
+lcov --capture --directory . --output-file coverage.info
+lcov --remove coverage.info '/usr/*' --output-file coverage.info
+genhtml coverage.info --output-directory coverage_html
+
+# For Clang (if lcov fails):
+LLVM_PROFILE_FILE="coverage.profraw" ctest
+llvm-profdata merge -sparse coverage.profraw -o coverage.profdata
+llvm-cov show ./tests/sid-json-tests -instr-profile=coverage.profdata -format=html -output-dir=coverage_html
+
+# View coverage report
+open coverage_html/index.html
 ```
 
 ## Test Coverage
@@ -58,6 +83,13 @@ ctest --verbose
 - Duplicate key handling modes
 - Comment parsing support
 - Escaped string handling
+
+### Schema Tests
+- Schema type operations and validation
+- Property constraints (min/max, length, items)
+- Required field validation
+- JSON schema parsing and conversion
+- Schema object lifecycle management
 
 ### Format Tests
 - Compact vs pretty formatting

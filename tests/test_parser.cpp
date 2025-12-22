@@ -18,20 +18,23 @@ TEST_F(ParserTest, ParseSimpleObject) {
     EXPECT_TRUE(out.jroot.is_object());
     EXPECT_EQ(out.jroot["name"].get_str(), "John");
     EXPECT_EQ(out.jroot["age"].get_int64(), 30);
+    EXPECT_NO_THROW(out.clear());
 }
 
 TEST_F(ParserTest, ParseSimpleArray) {
-    std::string json = R"([1, "hello", true, null])";
-    parser_input in {input_type::data, json};
+    std::string json = R"([1, "hello", true, null, false])";
+    parser_input in; // Set using in.set() below
     parser_output out;
     
+    EXPECT_NO_THROW(in.set(input_type::data, json));
     EXPECT_NO_THROW(value::parse(in, out));
     EXPECT_TRUE(out.jroot.is_array());
-    EXPECT_EQ(out.jroot.size(), 4);
+    EXPECT_EQ(out.jroot.size(), 5);
     EXPECT_EQ(out.jroot[0].get_int64(), 1);
     EXPECT_EQ(out.jroot[1].get_str(), "hello");
     EXPECT_EQ(out.jroot[2].get_bool(), true);
     EXPECT_TRUE(out.jroot[3].is_null());
+    EXPECT_EQ(out.jroot[4].get_bool(), false);
 }
 
 TEST_F(ParserTest, ParseNestedStructures) {
@@ -151,7 +154,7 @@ TEST_F(ParserTest, DuplicateKeyHandling) {
     parser_output out;
     
     // Accept (default)
-    in.ctrl.dupKey = parser_control::dup_key::accept;
+    in.ctrl.dupKey = parser_control::dup_key::overwrite;
     EXPECT_NO_THROW(value::parse(in, out));
     EXPECT_EQ(out.jroot["key"].get_str(), "second");
     

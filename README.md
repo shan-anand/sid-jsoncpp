@@ -95,13 +95,18 @@ This will create a `libsid-json` library that can be linked to your projects.
 ### Testing
 ```bash
 # Build with tests
-cmake -DBUILD_TESTING=ON ..
+cmake -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Debug ..
 make
 
 # Run tests
 make test
 # or
 ctest --verbose
+
+# Generate coverage report (requires lcov)
+lcov --capture --directory . --output-file coverage.info
+lcov --remove coverage.info '/usr/*' --output-file coverage.info
+genhtml coverage.info --output-directory coverage_html
 ```
 
 ### Installation

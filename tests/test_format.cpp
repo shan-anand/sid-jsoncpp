@@ -20,6 +20,51 @@ protected:
     value test_arr;
 };
 
+TEST_F(FormatTest, FormatConstructors) {
+    // Test different constructors
+    format fmt1;
+    EXPECT_EQ(fmt1.type, format_type::compact);
+    EXPECT_FALSE(fmt1.key_no_quotes);
+    EXPECT_FALSE(fmt1.string_no_quotes);
+    
+    format fmt2(format_type::pretty);
+    EXPECT_EQ(fmt2.type, format_type::pretty);
+    EXPECT_FALSE(fmt2.key_no_quotes);
+    EXPECT_FALSE(fmt2.string_no_quotes);
+    
+    format fmt3(true, false);
+    EXPECT_EQ(fmt3.type, format_type::compact);
+    EXPECT_TRUE(fmt3.key_no_quotes);
+    EXPECT_FALSE(fmt3.string_no_quotes);
+    
+    // Test format::get static method
+    format fmt4 = format::get("pretty");
+    EXPECT_EQ(fmt4.type, format_type::pretty);
+    
+    format fmt5 = format::get("compact");
+    EXPECT_EQ(fmt5.type, format_type::compact);
+}
+
+TEST_F(FormatTest, FormatOptions) {
+    format fmt(format_type::pretty);
+    fmt.indent = 3;
+    fmt.separator = '|';
+    fmt.key_no_quotes = true;
+    fmt.string_no_quotes = false;
+    
+    EXPECT_THROW(test_obj.to_str(fmt), std::runtime_error);
+
+    fmt.separator = '\t';
+    std::string result = test_obj.to_str(fmt);
+    EXPECT_FALSE(result.empty());
+    
+    // Test with different options
+    fmt.key_no_quotes = false;
+    fmt.string_no_quotes = true;
+    result = test_obj.to_str(fmt);
+    EXPECT_FALSE(result.empty());
+}
+
 TEST_F(FormatTest, CompactFormat) {
     std::string result = test_obj.to_str();
     
@@ -109,4 +154,62 @@ TEST_F(FormatTest, StringEscaping) {
     EXPECT_NE(result.find("\\n"), std::string::npos);
     EXPECT_NE(result.find("\\t"), std::string::npos);
     EXPECT_NE(result.find("\\\""), std::string::npos);
+}
+TEST_F(FormatTest, FormatTypeEnum) {
+    // Test format_type enum usage
+    format fmt1(format_type::compact);
+    EXPECT_EQ(fmt1.type, format_type::compact);
+    
+    format fmt2(format_type::pretty);
+    EXPECT_EQ(fmt2.type, format_type::pretty);
+    
+    // Test assignment
+    fmt1.type = format_type::pretty;
+    EXPECT_EQ(fmt1.type, format_type::pretty);
+}
+
+TEST_F(FormatTest, FormatStaticMethods) {
+    // Test format::get with different inputs
+    format pretty = format::get("pretty");
+    EXPECT_EQ(pretty.type, format_type::pretty);
+    EXPECT_FALSE(pretty.key_no_quotes);
+    
+    format compact = format::get("compact");
+    EXPECT_EQ(compact.type, format_type::compact);
+    EXPECT_FALSE(compact.key_no_quotes);
+    
+    format xpretty = format::get("xpretty");
+    EXPECT_EQ(xpretty.type, format_type::pretty);
+    EXPECT_TRUE(xpretty.key_no_quotes);
+    
+    format xcompact = format::get("xcompact");
+    EXPECT_EQ(xcompact.type, format_type::compact);
+    EXPECT_TRUE(xcompact.key_no_quotes);
+    
+    // Invalid type
+    EXPECT_THROW(format::get("PRETTY"), std::invalid_argument);
+}
+
+TEST_F(FormatTest, ComplexFormatting) {
+    // Create complex nested structure
+    value complex;
+    complex["metadata"]["version"] = "1.0";
+    complex["metadata"]["author"] = "test";
+    complex["data"]["items"].append("item1");
+    complex["data"]["items"].append("item2");
+    complex["data"]["count"] = 2;
+    complex["flags"]["enabled"] = true;
+    complex["flags"]["debug"] = false;
+    
+    // Test with different format options
+    format fmt(format_type::pretty);
+    fmt.indent = 2;
+    std::string result = fmt.to_str();
+    EXPECT_FALSE(result.empty());
+    
+    // Test compact format
+    format compact_fmt(format_type::compact);
+    result = compact_fmt.to_str();
+    EXPECT_FALSE(result.empty());
+    EXPECT_EQ(result.find('\n'), std::string::npos);
 }

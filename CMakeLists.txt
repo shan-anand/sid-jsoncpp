@@ -37,6 +37,17 @@ add_executable(sid-json-client
   src/sid/json-client/main.cpp
   $<TARGET_OBJECTS:sid-json>
 )
+
+# Add coverage flags for Debug builds to client
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_compile_options(sid-json-client PRIVATE -fprofile-instr-generate -fcoverage-mapping)
+        target_link_options(sid-json-client PRIVATE -fprofile-instr-generate)
+    else()
+        target_compile_options(sid-json-client PRIVATE --coverage)
+        target_link_options(sid-json-client PRIVATE --coverage)
+    endif()
+endif()
 # Set library properties
 set_target_properties(sid-json PROPERTIES
     VERSION ${PROJECT_VERSION}
@@ -59,6 +70,16 @@ set(CMAKE_INSTALL_MESSAGE ALWAYS)
 
 # Add tests subdirectory
 if(BUILD_TESTING)
+    # Add coverage flags for Debug builds
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            target_compile_options(sid-json PRIVATE -fprofile-instr-generate -fcoverage-mapping)
+            target_link_options(sid-json PRIVATE -fprofile-instr-generate)
+        else()
+            target_compile_options(sid-json PRIVATE --coverage)
+            target_link_options(sid-json PRIVATE --coverage)
+        endif()
+    endif()
     add_subdirectory(tests)
 endif()
 
