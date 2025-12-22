@@ -139,6 +139,9 @@ TEST_F(ValueTest, EraseOperations) {
     EXPECT_EQ(arr.size(), 2);
     EXPECT_EQ(arr[0].get_int64(), 10);
     EXPECT_EQ(arr[1].get_int64(), 20);
+
+    // Erase out-of-range element (should throw)
+    EXPECT_THROW(arr.erase(50), std::out_of_range);
     
     // Test object erase operations
     value obj;
