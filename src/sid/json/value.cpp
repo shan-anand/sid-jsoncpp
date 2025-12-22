@@ -232,13 +232,10 @@ bool value::has_key(const std::string& _key, value& _obj) const
 {
   if ( ! is_object() )
     throw std::runtime_error(__func__ + std::string("() can be used only for object type. ") + _key);
-  for ( const auto& entry : m_data.map() )
+  if ( auto it = m_data.map().find(_key); it != m_data.map().end() )
   {
-    if ( entry.first == _key )
-    {
-      _obj = entry.second;
-      return true;
-    }
+    _obj = it->second;
+    return true;
   }
   return false;
 }

@@ -46,7 +46,7 @@ namespace sid::json {
 struct parser_control
 {
   enum class dup_key : uint8_t {
-    accept = 0, ignore, append, reject
+    overwrite = 0, ignore, append, reject
   };
 
   union parse_mode
@@ -71,8 +71,7 @@ struct parser_control
                                         //!   (in addition to true, false, null)
     };
     uint8_t flags;
-    parse_mode() : flags(0) {}
-    parse_mode(uint8_t _flags) : flags(_flags) {}
+    parse_mode(uint8_t _flags = 0) : flags(_flags) {}
   };
 
   //! Members
@@ -81,13 +80,7 @@ struct parser_control
 
   //! Default constructor
   parser_control(
-    const parse_mode& _mode = parse_mode(),
-    const dup_key&    _dupKey = dup_key::accept
-    ) : mode(_mode), dupKey(_dupKey)
-    {}
-  //! One argment constructor
-  parser_control(
-    const dup_key&    _dupKey,
+    const dup_key&    _dupKey = dup_key::overwrite,
     const parse_mode& _mode = parse_mode()
     ) : mode(_mode), dupKey(_dupKey)
     {}

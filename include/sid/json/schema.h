@@ -83,6 +83,7 @@ private:
 struct schema_types : public std::set<schema_type>
 {
   void add(const schema_type& _type) { this->insert(_type); }
+  void add(const schema_type::ID& _typeId) { return add(schema_type(_typeId)); }
   void add(const value& _value);
   bool exists(const schema_type& _type) const { return this->find(_type) != this->end(); }
   void remove(const schema_type& _type) { this->erase(_type); }

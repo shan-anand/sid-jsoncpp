@@ -222,7 +222,7 @@ void parser::parse_object(value& _jobj)
       parse_value(_jobj[m_key]);
     }
     // Handle duplicate key based on the input mode
-    else if ( m_in.ctrl.dupKey == parser_control::dup_key::accept )
+    else if ( m_in.ctrl.dupKey == parser_control::dup_key::overwrite )
     {
       // Accept the value and overwrite it
       parse_value(_jobj[m_key]);

@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
       else if ( key == "-d" || key == "--dup" || key == "--duplicate" )
       {
         if ( value == "accept" )
-          in.ctrl.dupKey = json::parser_control::dup_key::accept;
+          in.ctrl.dupKey = json::parser_control::dup_key::overwrite;
         else if ( value == "ignore" )
           in.ctrl.dupKey = json::parser_control::dup_key::ignore;
         else if ( value == "append" )
