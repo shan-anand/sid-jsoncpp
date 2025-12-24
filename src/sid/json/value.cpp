@@ -39,6 +39,7 @@ LICENSE: END
 #include "json/value.h"
 #include "json/schema.h"
 #include "utils.h"
+#include "parser_io.h"
 #include "parser.h"
 #include <fstream>
 #include <stack>
@@ -59,27 +60,85 @@ using namespace sid::json;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * @fn bool parse(const parser_input& _in,
- *                parser_output&      _out
- *               );
- * @brief Convert the given json string to json object
- *
- * @param _in [in] parser input
- * @param _out [out] parser ouput
+ * @fn parse_file
+ * @brief parse json file
+ * @param _out output data
+ * @param _filePath input json file
+ * @param _ctrl parser control flags
+ * @throws std::exception if parsing fails
  */
-/*static*/
-void value::parse(
-  const parser_input& _in,
-  parser_output&      _out
-  )
+//static
+void value::parse_file(
+  parser_output&        _out,
+  const std::string&    _filePath,
+  const parser_control& _ctrl // = parser_control()
+)
 {
-  parser jparser(_in, _out);
-  //jparser.m_schema = &_in.schema;
-  jparser.parse();
-
+  char_parser_input in(_filePath, input_type::file_path, _ctrl);
+  char_parser parser(in, _out);
+  parser.parse();
 }
 
-void value::p_set(const value_type _type/* = value_type::null*/)
+/**
+ * @fn parse
+ * @brief parse json string data
+ * @param _out output data
+ * @param _in input string data
+ * @param _ctrl parser control flags
+ * @throws std::exception if parsing fails
+ */
+//static
+void value::parse(
+  parser_output&        _out,
+  const std::string&    _in,
+  const parser_control& _ctrl // = parser_control()
+)
+{
+  char_parser_input in(_in, input_type::data, _ctrl);
+  char_parser parser(in, _out);
+  parser.parse();
+}
+
+/**
+ * @fn parse
+ * @brief parse json stream buffer
+ * @param _out output data
+ * @param _in stream buffer input
+ * @param _ctrl parser control flags
+ * @throws std::exception if parsing fails
+ */
+//static
+void value::parse(
+  parser_output&        _out,
+  std::streambuf&       _in,
+  const parser_control& _ctrl // = parser_control()
+)
+{
+  buffer_parser_input in(_in, _ctrl);
+  buffer_parser parser(in, _out);
+  parser.parse();
+}
+
+/**
+ * @fn parse
+ * @brief parse json stream buffer
+ * @param _out output data
+ * @param _in input stream
+ * @param _ctrl parser control flags
+ * @throws std::exception if parsing fails
+ */
+//static
+void value::parse(
+  parser_output&        _out,
+  std::istream&         _in,
+  const parser_control& _ctrl // = parser_control()
+)
+{
+  parse(_out, *_in.rdbuf(), _ctrl);  
+}
+
+
+void value::init(const value_type _type/* = value_type::null*/)
 {
   m_type = m_data.init(_type);
 }

@@ -37,6 +37,8 @@ LICENSE: END
  * @brief Implementation of json schema
  */
 #include "json/schema.h"
+#include "parser_io.h"
+#include "parser.h"
 #include <fstream>
 #include <stack>
 #include <iomanip>
@@ -144,9 +146,10 @@ schema schema::parse_file(const std::string& _schemaFile)
 /*static*/
 schema schema::parse(const std::string& _schemaData)
 {
-  parser_input in(json::input_type::data, _schemaData);
+  char_parser_input in(_schemaData, input_type::data);
   parser_output out;
-  value::parse(in, out);
+  char_parser parser(in, out);
+  parser.parse();
   return parse(out.jroot);
 }
 

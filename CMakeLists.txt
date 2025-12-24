@@ -13,7 +13,6 @@ include_directories(include/sid)
 set(SOURCES
     src/sid/json/utils.cpp
     src/sid/json/format.cpp
-    src/sid/json/parser.cpp
     src/sid/json/parser_stats.cpp
     src/sid/json/time_calc.cpp
     src/sid/json/value.cpp

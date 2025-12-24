@@ -37,6 +37,8 @@ LICENSE: END
 #include <cstring>
 #include <stdexcept>
 #include <unistd.h>
+#include <sstream>
+#include <iterator>
 
 using namespace std;
 using namespace sid;
@@ -46,8 +48,12 @@ namespace sid::json::local
 {
   void show_usage(const char* _progName);
   std::string trim(const std::string& _str);
-  std::string get_file_contents(const std::string& _filePath);
+  string& get_stdin(string& _out);
+  std::string& get_stream_contents(string& _out, std::ifstream& _in);
+  std::string& get_file_contents(std::string& _out, const std::string& _filePath);
 }
+
+enum class Use { String, MMap, FileBuffer, StringBuffer, FileStream, StringStream };
 
 int main(int argc, char* argv[])
 {
@@ -59,14 +65,15 @@ int main(int argc, char* argv[])
     local::show_usage(argv[0]);
     return 1;
   }
+  parser_output out;
   try
   {
-    json::parser_input  in;
+    parser_control ctrl;
     std::string param, key, value;
     std::optional<json::format> outputFmt;
     bool isStdin = false;
     bool showOutput = false;
-    bool useMmap = true;
+    std::optional<Use> use;
     std::optional<std::string> filename;
     // Parse for options and filename
     // They can be in any order
@@ -109,23 +116,23 @@ int main(int argc, char* argv[])
       }
       else if ( key == "-d" || key == "--dup" || key == "--duplicate" )
       {
-        if ( value == "accept" )
-          in.ctrl.dupKey = json::parser_control::dup_key::overwrite;
+        if ( value == "overwrite" )
+          ctrl.dupKey = json::parser_control::dup_key::overwrite;
         else if ( value == "ignore" )
-          in.ctrl.dupKey = json::parser_control::dup_key::ignore;
+          ctrl.dupKey = json::parser_control::dup_key::ignore;
         else if ( value == "append" )
-          in.ctrl.dupKey = json::parser_control::dup_key::append;
+          ctrl.dupKey = json::parser_control::dup_key::append;
         else if ( value == "reject" )
-          in.ctrl.dupKey = json::parser_control::dup_key::reject;
+          ctrl.dupKey = json::parser_control::dup_key::reject;
         else if ( ! value.empty() )
-          throw std::invalid_argument(key + " can only be accept|ignore|append|reject");
+          throw std::invalid_argument(key + " can only be overwrite|ignore|append|reject");
       }
       else if ( key == "-k" || key == "--allow-flex-keys" || key == "--allow-flexible-keys" )
-        in.ctrl.mode.allowFlexibleKeys = 1;
+        ctrl.mode.allowFlexibleKeys = 1;
       else if ( key == "-s" || key == "--allow-flex-strings" || key == "--allow-flexible-strings" )
-        in.ctrl.mode.allowFlexibleStrings = 1;
+        ctrl.mode.allowFlexibleStrings = 1;
       else if ( key == "-n" || key == "--allow-nocase" || key == "--allow-nocase-values" )
-        in.ctrl.mode.allowNocaseValues = 1;
+        ctrl.mode.allowNocaseValues = 1;
       else if ( key == "-o" || key == "--show-output" )
       {
         showOutput = true;
@@ -140,11 +147,19 @@ int main(int argc, char* argv[])
       else if ( key == "-u" || key == "--use" )
       {
         if ( value == "mmap" )
-          useMmap = true;
+          use = Use::MMap;
         else if ( value == "data" || value == "string" ) 
-          useMmap = false;
+          use = Use::String;
+        else if ( value == "file-buffer" )
+          use = Use::FileBuffer;
+        else if ( value == "string-buffer" )
+          use = Use::StringBuffer;
+        else if ( value == "file-stream" )
+          use = Use::FileStream;
+        else if ( value == "string-stream" )
+          use = Use::StringStream;
         else
-          throw std::invalid_argument(key + " values can only be mmap|data|string");
+          throw std::invalid_argument(key + " values can only be mmap|string|file-buffer|string-buffer|file-stream|string-stream");
       }
       else
         throw std::invalid_argument("Invalid key: " + key);
@@ -160,20 +175,67 @@ int main(int argc, char* argv[])
     else if ( isStdin || filename.has_value() )
      throw std::invalid_argument("Cannot use filename or --stdin with non-interactive mode");
 
-    std::string data;
+    // --stdin or interactive modes cannot use mmap. if so, reset it
+    if ( !filename.has_value() && use.has_value() && use.value() == Use::MMap )
+      use.reset();
+    // If use is not set, set the default value based on --stdin/interactive or <filename>
+    if ( !use.has_value() )
+      use = filename.has_value()? Use::MMap : Use::FileStream;
+
     if ( filename.has_value() )
     {
-      // Complete preparing the input object by filling the input type and input
-      if ( useMmap )
+      switch ( use.value() )
       {
-        cerr << "Using mmap for parsing...." << endl;
-        in.set(json::input_type::file_path, filename.value());
-      }
-      else
-      {
-        data = local::get_file_contents(filename.value());
-        cerr << "Using string data for parsing...." << endl;
-        in.set(json::input_type::data, data);
+      case Use::MMap:
+        {
+          cerr << "Using mmap for parsing...." << endl;
+          json::value::parse_file(out, filename.value(), ctrl);
+        }
+        break;
+      case Use::String:
+        {
+          cerr << "Using string data for parsing...." << endl;
+          std::string data; local::get_file_contents(data, filename.value());
+          json::value::parse(out, data, ctrl);
+        }
+        break;
+      case Use::FileBuffer:
+        {
+          cerr << "Using file buffer for parsing...." << endl;
+          std::filebuf fbuf;
+          //std::vector<char> buffer(512);
+          //fbuf.pubsetbuf(buffer.data(), buffer.size());
+          if ( !fbuf.open(filename.value().c_str(), std::ios::in) )
+            throw std::system_error(errno, std::system_category(), "Failed to open file: " + filename.value());
+          json::value::parse(out, fbuf, ctrl);
+        }
+        break;
+      case Use::StringBuffer:
+        {
+          cerr << "Using string buffer for parsing...." << endl;
+          std::string data; local::get_file_contents(data, filename.value());
+          std::stringbuf sbuf(data, std::ios_base::in);
+          json::value::parse(out, sbuf, ctrl);
+        }
+        break;
+      case Use::FileStream:
+        {
+          cerr << "Using file stream for parsing...." << endl;
+          std::ifstream fstream;
+          fstream.open(filename.value());
+          if ( !fstream.is_open() )
+            throw std::system_error(errno, std::system_category(), "Failed to open file: " + filename.value());
+          json::value::parse(out, fstream, ctrl);
+        }
+        break;
+      case Use::StringStream:
+        {
+          cerr << "Using string stream for parsing...." << endl;
+          std::string data; local::get_file_contents(data, filename.value());
+          std::istringstream sstream(data);
+          json::value::parse(out, sstream, ctrl);
+        }
+        break;
       }
     }
     else
@@ -184,15 +246,57 @@ int main(int argc, char* argv[])
         // Interactive mode - show instruction
         cerr << "Reading multiple lines, end it with Ctrl+D" << endl;
       }
-      // Get data from stdin
-      for ( std::string line; getline(cin, line); data += line);
-      data = local::trim(data);
-      if ( data.empty() ) return -1;
-      in.set(json::input_type::data, data);
+      switch ( use.value() )
+      {
+      case Use::MMap: // Cannot use MMap in stdin mode
+        break;
+      case Use::String:
+        {
+          cerr << "Using stdin string data for parsing...." << endl;
+          std::string data; local::get_stdin(data);
+          json::value::parse(out, data, ctrl);
+        }
+        break;
+      case Use::FileBuffer:
+        {
+          cerr << "Using stdin file buffer for parsing...." << endl;
+          // DISABLE THIS - Makes cin MUCH faster for reading character by character
+          // This massively improves the performance
+          std::ios_base::sync_with_stdio(false);
+          // Also untie cin from cout (prevents flush on every read)
+          std::cin.tie(nullptr);
+          json::value::parse(out, *cin.rdbuf(), ctrl);
+        }
+        break;
+      case Use::StringBuffer:
+        {
+          cerr << "Using stdin string buffer for parsing...." << endl;
+          std::string data; local::get_stdin(data);
+          std::stringbuf sbuf(data, std::ios_base::in);
+          json::value::parse(out, sbuf, ctrl);
+        }
+        break;
+      case Use::FileStream:
+        {
+          cerr << "Using stdin file stream for parsing...." << endl;
+          // DISABLE THIS - Makes cin MUCH faster for reading character by character
+          // This massively improves the performance
+          std::ios_base::sync_with_stdio(false);
+          // Also untie cin from cout (prevents flush on every read)
+          std::cin.tie(nullptr);
+          json::value::parse(out, cin, ctrl);
+        }
+        break;
+      case Use::StringStream:
+        {
+          cerr << "Using stdin string stream for parsing...." << endl;
+          std::string data; local::get_stdin(data);
+          std::istringstream sstream(data);
+          json::value::parse(out, sstream, ctrl);
+        }
+        break;
+      }
     }
-
-    parser_output out;
-    json::value::parse(in, out);
     if ( showOutput )
     {
       cout << (outputFmt.has_value()? out.jroot.to_str(outputFmt.value()) : out.jroot.to_str()) << endl;
@@ -202,7 +306,8 @@ int main(int argc, char* argv[])
   }
   catch(const std::exception& e)
   {
-    cerr << e.what() << endl;
+    cerr << out.stats.to_str() << endl;
+    cerr << "Error...: " << e.what() << endl;
     retVal = -1;
   }
   
@@ -220,8 +325,8 @@ void local::show_usage(const char* _progName)
        << "  <key>" << endl
        << "  -h, --help                     Show this help message" << endl
        << "      --stdin                    Read from stdin (interactive mode only)" << endl
-       << "  -d, --dup, --duplicate=<mode>  Duplicate key handling (mode: accept|ignore|append|reject)" << endl
-       << "                                 If omitted, it defaults to accept" << endl
+       << "  -d, --dup, --duplicate=<mode>  Duplicate key handling (mode: overwrite|ignore|append|reject)" << endl
+       << "                                 If omitted, it defaults to overwrite" << endl
        << "  -k, --allow-flex-keys,         Allow unquoted object keys" << endl
        << "      --allow-flexible-keys" << endl
        << "  -s, --allow-flex-strings,      Allow unquoted string values" << endl
@@ -230,9 +335,11 @@ void local::show_usage(const char* _progName)
        << "      --allow-nocase-values" << endl
        << "  -o, --show-output[=<format>]   Show parsed JSON output (format: compact|pretty)" << endl
        << "                                 If <format> is omitted, it defaults to compact" << endl
-       << "  -u, --use=<method>             Parsing method (method: mmap|data|string)" << endl
-       << "                                 Valid only if <filename> is provided, skipped for stdin" << endl
-       << "                                 If omitted, it defaults to mmap" << endl
+       << "  -u, --use=<method>             Parsing method (method: mmap|string|file-buffer|string-buffer|file-stream|string-stream)" << endl
+       << "                                 mmap is valid only if <filename> is provided, for --stdin it switches to default" << endl
+       << "                                 If omitted, it defaults to " << endl
+       << "                                    * mmap for <filename>" << endl
+       << "                                    * string-stream for --stdin" << endl
        << endl
        << "Examples:" << endl
        << "  " << _progName << " ./data.json               # Parse data.json file" << endl
@@ -253,8 +360,23 @@ std::string local::trim(const std::string& _str)
   return _str.substr(first, last - first + 1);
 }
 
-std::string local::get_file_contents(const std::string& _filePath)
+string& local::get_stdin(std::string& _out)
 {
+  _out.clear();
+  // Get data from stdin. Reads all characters as it is.
+  _out = std::string {
+      std::istreambuf_iterator<char>(cin),
+      std::istreambuf_iterator<char>()
+  };
+  // Get data from stdin, alternate method. Reads until newline of eof.
+  //   If the last line doesn't end with a new line, it still adds a new line
+  //for ( std::string line; getline(cin, line, '\0'); _out += line + "\n");
+  return _out;
+}
+
+std::string& local::get_file_contents(std::string& _out, const std::string& _filePath)
+{
+  _out.clear();
   std::ifstream in;
   in.open(_filePath);
   if ( ! in.is_open() )
@@ -262,14 +384,13 @@ std::string local::get_file_contents(const std::string& _filePath)
   in.seekg(0, std::ios::end);
   size_t fileSize = in.tellg();
   in.seekg(0, std::ios::beg);
-  std::string jsonStr;
   if ( fileSize > 0 )
   {
+    // Allocate enough space for the file contents
+    _out.resize(fileSize);
     // Define the size to read
     const size_t BUFFER_SIZE = ::sysconf(_SC_PAGESIZE) * 32;
-    // Allocate enough space for the file contents
-    jsonStr.resize(fileSize);
-    char* p = jsonStr.data();
+    char* p = _out.data();
     while ( ! in.eof() )
     {
       in.read(p, BUFFER_SIZE);
@@ -278,7 +399,7 @@ std::string local::get_file_contents(const std::string& _filePath)
       p += in.gcount();
     }
   }
-  return jsonStr;
+  return _out;
 }
 
 /*

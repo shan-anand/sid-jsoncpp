@@ -55,10 +55,6 @@ enum class input_type : uint8_t { data, file_path };
 
 //! Forward declaration of json schema
 class schema;
-//! Forward declaration of parser (not exposed)
-struct parser;
-//! Forward declaration of parser_input
-struct parser_input;
 //! Forward declaration of parser_output
 struct parser_output;
 
@@ -71,7 +67,6 @@ struct parser_output;
  */
 class value
 {
-  friend class parser;
 public:
   //! Array type definition
   using array_t = std::vector<value>;
@@ -79,16 +74,57 @@ public:
   using object_t = std::map<std::string, value>;
 public:
   /**
-   * @fn parse
-   * @brief parse json data
-   * @param _in input data
+   * @fn parse_file
+   * @brief parse json file
    * @param _out output data
+   * @param _filePath input json file
+   * @param _ctrl parser control flags
+   * @throws std::exception if parsing fails
+   */
+  static void parse_file(
+    parser_output&        _out,
+    const std::string&    _filePath,
+    const parser_control& _ctrl = parser_control()
+  );
+  /**
+   * @fn parse
+   * @brief parse json string data
+   * @param _out output data
+   * @param _in input string data
+   * @param _ctrl parser control flags
    * @throws std::exception if parsing fails
    */
   static void parse(
-    const parser_input& _in,
-    parser_output&      _out
-    );
+    parser_output&        _out,
+    const std::string&    _in,
+    const parser_control& _ctrl = parser_control()
+  );
+  /**
+   * @fn parse
+   * @brief parse json stream buffer
+   * @param _out output data
+   * @param _in stream buffer input
+   * @param _ctrl parser control flags
+   * @throws std::exception if parsing fails
+   */
+  static void parse(
+    parser_output&        _out,
+    std::streambuf&       _in,
+    const parser_control& _ctrl = parser_control()
+  );
+  /**
+   * @fn parse
+   * @brief parse json stream buffer
+   * @param _out output data
+   * @param _in input stream
+   * @param _ctrl parser control flags
+   * @throws std::exception if parsing fails
+   */
+  static void parse(
+    parser_output&        _out,
+    std::istream&         _in,
+    const parser_control& _ctrl = parser_control()
+  );
 
   // Constructors
   value(const value_type _type = value_type::null);
@@ -110,6 +146,7 @@ public:
 
   bool empty() const { return m_type == value_type::null; }
   void clear();
+  void init(const value_type _type = value_type::null);
 
   //! get the value_type
   value_type type() const { return m_type; }
@@ -222,7 +259,6 @@ public:
 
 private:
   void p_write(std::ostream& _out, const format& _format, uint32_t _level) const;
-  void p_set(const value_type _type = value_type::null);
 
 private:
   union union_data
@@ -273,24 +309,6 @@ private:
 
 #pragma pack(pop)
 
-struct parser_input
-{
-  input_type     inputType;
-  std::string    input;
-  parser_control ctrl;
-  //schema         schema;
-
-  parser_input() {}
-  parser_input(const input_type _inputType, const std::string& _input, const parser_control& _ctrl = parser_control())
-    : inputType(_inputType), input(_input), ctrl(_ctrl) {}
-
-  void set(const input_type& _inputType, const std::string& _input)
-  {
-    this->inputType = _inputType;
-    this->input = _input;
-  }
-};
-
 struct parser_output
 {
   value        jroot;
@@ -298,5 +316,6 @@ struct parser_output
 
   void clear() { jroot.clear(); stats.clear(); }
 };
+
 
 } // namespace sid::json
