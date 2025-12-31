@@ -246,22 +246,24 @@ Options: <key>[=<value>]
   <key>
   -h, --help                     Show this help message
       --stdin                    Read from stdin (interactive mode only)
-  -d, --dup, --duplicate=<mode>  Duplicate key handling (mode: overwrite|ignore|append|reject)
-                                 If omitted, it defaults to overwrite
+  -d, --dup, --duplicate         Duplicate key handling
+      --duplicate-keys=<mode>      (mode: overwrite|ignore|append|reject)
+                                   If omitted, it defaults to overwrite
   -k, --allow-flex-keys,         Allow unquoted object keys
       --allow-flexible-keys
   -s, --allow-flex-strings,      Allow unquoted string values
       --allow-flexible-strings
-  -n, --allow-nocase,            Allow case-insensitive true/false/null
-      --allow-nocase-values
-  -o, --show-output[=<format>]   Show parsed JSON output (format: compact|pretty)
-                                 If <format> is omitted, it defaults to compact
-  -u, --use=<method>             Parsing method (method: mmap|string|file-buffer|string-buffer|file-stream|string-stream)
-                                 mmap is valid only if <filename> is provided, for --stdin it switches to default
-                                 If omitted, it defaults to
-                                    * mmap for <filename>
-                                    * string-stream for --stdin
-
+  -n, --allow-nocase,            Allow case-insensitive values for true, false, null
+      --allow-nocase-values         * True, TRUE, False, FALSE, Null, NULL
+  -o, --show-output[=<format>]   Show parsed JSON output
+                                   (format: compact|pretty)
+                                   If <format> is omitted, it defaults to compact
+  -u, --use=<method>             Parsing method to use
+                                   (method: mmap|string|file-buffer|string-buffer|file-stream|string-stream)
+                                   If omitted, it defaults to
+                                     * mmap for <filename>
+                                     * string-stream for --stdin
+                                   Note: mmap for --stdin is invalid and ignored
 Examples:
   sid-json-client ./data.json               # Parse data.json file
   sid-json-client --stdin                   # Read from stdin interactively
@@ -269,7 +271,7 @@ Examples:
   sid-json-client -k -s ./data.json         # Allow flexible keys and strings
   sid-json-client --dup=append ./data.json  # Append duplicate keys
   echo '{"key":"value"}' | sid-json-client  # Parse from stdin (pipe)
-  cat ./data.json | sid-json-client -o      # Parse stdin (pipe) and show output
+  cat ./data.json | sid-json-client         # Parse from stdin (pipe)
 ```
 
 ## License
