@@ -298,11 +298,11 @@ int main(int argc, char* argv[])
         break;
       }
     }
+    cerr << out.stats.to_string() << endl;
     if ( showOutput )
     {
       cout << (outputFmt.has_value()? out.jroot.to_string(outputFmt.value()) : out.jroot.to_string()) << endl;
     }
-    cerr << out.stats.to_string() << endl;
     retVal = 0;
   }
   catch(const std::exception& e)
