@@ -404,7 +404,7 @@ int value::get_value(std::string& _val) const
 }
 
 //! Convert json to string using the given format type
-std::string value::to_str(const format_type _type/* = format_type::compact*/) const
+std::string value::to_string(const format_type _type/* = format_type::compact*/) const
 {
   std::ostringstream out;
   this->write(out, _type);
@@ -412,7 +412,7 @@ std::string value::to_str(const format_type _type/* = format_type::compact*/) co
 }
 
 //! Convert json to string using the given format
-std::string value::to_str(const format& _format) const
+std::string value::to_string(const format& _format) const
 {
   std::ostringstream out;
   this->write(out, _format);

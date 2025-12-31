@@ -136,7 +136,7 @@ format format::get(const std::string& _value)
   return fmt;
 }
 
-std::string format::to_str() const
+std::string format::to_string() const
 {
   std::ostringstream out;
   out << ((this->type == format_type::compact)? "compact":"pretty");

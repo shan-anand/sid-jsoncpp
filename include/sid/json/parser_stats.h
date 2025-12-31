@@ -52,7 +52,7 @@ struct parser_stats
 
   parser_stats();
   void clear();
-  std::string to_str() const;
+  std::string to_string() const;
 };
 
 } // namespace sid::json

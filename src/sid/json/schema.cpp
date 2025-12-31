@@ -341,9 +341,9 @@ void schema::property::set(const value& _jproperties, const std::string& _key)
   }
 }
 
-std::string schema::to_str() const
+std::string schema::to_string() const
 {
-  return to_json().to_str(format_type::pretty);
+  return to_json().to_string(format_type::pretty);
 }
 
 value schema::to_json() const
@@ -368,9 +368,9 @@ value schema::to_json() const
   return jroot;
 }
 
-std::string schema::property_vec::to_str() const
+std::string schema::property_vec::to_string() const
 {
-  return to_json().to_str(format_type::pretty);
+  return to_json().to_string(format_type::pretty);
 }
 
 value schema::property_vec::to_json() const
@@ -382,9 +382,9 @@ value schema::property_vec::to_json() const
   return jroot;
 }
 
-std::string schema::property::to_str() const
+std::string schema::property::to_string() const
 {
-  return to_json().to_str(format_type::pretty);
+  return to_json().to_string(format_type::pretty);
 }
 
 value schema::property::to_json() const

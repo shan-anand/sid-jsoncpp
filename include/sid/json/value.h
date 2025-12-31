@@ -248,9 +248,9 @@ public:
   void erase(const size_t _index);
 
   //! Convert json to string using the given format type
-  std::string to_str(const format_type _type = format_type::compact) const;
+  std::string to_string(const format_type _type = format_type::compact) const;
   //! Convert json to string using the given format
-  std::string to_str(const format& _format) const;
+  std::string to_string(const format& _format) const;
 
   //! Write json to the given output stream
   void write(std::ostream& _out, const format_type _type = format_type::compact) const;

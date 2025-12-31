@@ -74,7 +74,7 @@ struct format
     key_no_quotes = _key_no_quotes; string_no_quotes = _string_no_quotes;
   }
 
-  std::string to_str() const;
+  std::string to_string() const;
   static format get(const std::string& _value);
 };
 

@@ -52,21 +52,21 @@ TEST_F(FormatTest, FormatOptions) {
     fmt.key_no_quotes = true;
     fmt.string_no_quotes = false;
     
-    EXPECT_THROW(test_obj.to_str(fmt), std::runtime_error);
+    EXPECT_THROW(test_obj.to_string(fmt), std::runtime_error);
 
     fmt.separator = '\t';
-    std::string result = test_obj.to_str(fmt);
+    std::string result = test_obj.to_string(fmt);
     EXPECT_FALSE(result.empty());
     
     // Test with different options
     fmt.key_no_quotes = false;
     fmt.string_no_quotes = true;
-    result = test_obj.to_str(fmt);
+    result = test_obj.to_string(fmt);
     EXPECT_FALSE(result.empty());
 }
 
 TEST_F(FormatTest, CompactFormat) {
-    std::string result = test_obj.to_str();
+    std::string result = test_obj.to_string();
     
     // Should not contain extra whitespace
     EXPECT_EQ(result.find('\n'), std::string::npos);
@@ -80,7 +80,7 @@ TEST_F(FormatTest, CompactFormat) {
 
 TEST_F(FormatTest, PrettyFormat) {
     format fmt(format_type::pretty);
-    std::string result = test_obj.to_str(fmt);
+    std::string result = test_obj.to_string(fmt);
     
     // Should contain newlines and indentation
     EXPECT_NE(result.find('\n'), std::string::npos);
@@ -95,16 +95,16 @@ TEST_F(FormatTest, CustomIndentation) {
     format fmt(format_type::pretty);
     fmt.indent = 4;
     
-    std::string result = test_obj.to_str(fmt);
+    std::string result = test_obj.to_string(fmt);
     EXPECT_NE(result.find("    "), std::string::npos); // 4 spaces
 }
 
 TEST_F(FormatTest, ArrayFormatting) {
-    std::string compact = test_arr.to_str();
+    std::string compact = test_arr.to_string();
     EXPECT_EQ(compact.find('\n'), std::string::npos);
     
     format fmt(format_type::pretty);
-    std::string pretty = test_arr.to_str(fmt);
+    std::string pretty = test_arr.to_string(fmt);
     EXPECT_NE(pretty.find('\n'), std::string::npos);
 }
 
@@ -113,13 +113,13 @@ TEST_F(FormatTest, EmptyContainers) {
     // Empty object is created by accessing with []
     empty_obj["dummy"];
     empty_obj.erase("dummy");
-    EXPECT_EQ(empty_obj.to_str(), "{}");
+    EXPECT_EQ(empty_obj.to_string(), "{}");
     
     value empty_arr;
     // Empty array is created by calling append then clear
     empty_arr.append(1);
     empty_arr.erase(0);
-    EXPECT_EQ(empty_arr.to_str(), "[]");
+    EXPECT_EQ(empty_arr.to_string(), "[]");
 }
 
 TEST_F(FormatTest, SpecialValues) {
@@ -138,7 +138,7 @@ TEST_F(FormatTest, NestedStructures) {
     nested["items"] = test_arr;
     
     format fmt(format_type::pretty);
-    std::string result = nested.to_str(fmt);
+    std::string result = nested.to_string(fmt);
     
     // Should have proper nesting
     EXPECT_NE(result.find("{\n"), std::string::npos);
@@ -149,7 +149,7 @@ TEST_F(FormatTest, NestedStructures) {
 TEST_F(FormatTest, StringEscaping) {
     value obj;
     obj["msg"] = "Hello\nWorld\t\"Quote\"";
-    std::string result = obj.to_str();
+    std::string result = obj.to_string();
     
     EXPECT_NE(result.find("\\n"), std::string::npos);
     EXPECT_NE(result.find("\\t"), std::string::npos);
@@ -204,12 +204,12 @@ TEST_F(FormatTest, ComplexFormatting) {
     // Test with different format options
     format fmt(format_type::pretty);
     fmt.indent = 2;
-    std::string result = fmt.to_str();
+    std::string result = fmt.to_string();
     EXPECT_FALSE(result.empty());
     
     // Test compact format
     format compact_fmt(format_type::compact);
-    result = compact_fmt.to_str();
+    result = compact_fmt.to_string();
     EXPECT_FALSE(result.empty());
     EXPECT_EQ(result.find('\n'), std::string::npos);
 }

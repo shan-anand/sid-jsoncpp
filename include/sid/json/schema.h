@@ -102,7 +102,7 @@ public:
   struct property_vec : public std::vector<property>
   {
     void set(const value& _jproperties);
-    std::string to_str() const;
+    std::string to_string() const;
     value to_json() const;
   };
 
@@ -136,7 +136,7 @@ public:
     property();
     void clear();
     void set(const value& _jproperties, const std::string& _key);
-    std::string to_str() const;
+    std::string to_string() const;
     value to_json() const;
   };
 
@@ -152,7 +152,7 @@ public:
   schema();
   void clear();
   bool empty() const;
-  std::string to_str() const;
+  std::string to_string() const;
   value to_json() const;
 
   static schema parse_file(const std::string& _schemaFile);

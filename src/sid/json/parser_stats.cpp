@@ -70,7 +70,7 @@ void parser_stats::clear()
   time_ms = 0;
 }
 
-std::string parser_stats::to_str() const
+std::string parser_stats::to_string() const
 {
   std::ostringstream out;
   out << "processed.....: " << json::get_sep(data_size) << " byte(s)" << endl

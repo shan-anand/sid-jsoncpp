@@ -39,6 +39,7 @@ LICENSE: END
 #include <unistd.h>
 #include <sstream>
 #include <iterator>
+#include <regex>
 
 using namespace std;
 using namespace sid;
@@ -114,7 +115,7 @@ int main(int argc, char* argv[])
         local::show_usage(argv[0]);
         return 1;
       }
-      else if ( key == "-d" || key == "--dup" || key == "--duplicate" )
+      else if ( key == "-d" || key == "--dup" || key == "--duplicate" || key == "--duplicate-keys" )
       {
         if ( value == "overwrite" )
           ctrl.dupKey = json::parser_control::dup_key::overwrite;
@@ -299,14 +300,14 @@ int main(int argc, char* argv[])
     }
     if ( showOutput )
     {
-      cout << (outputFmt.has_value()? out.jroot.to_str(outputFmt.value()) : out.jroot.to_str()) << endl;
+      cout << (outputFmt.has_value()? out.jroot.to_string(outputFmt.value()) : out.jroot.to_string()) << endl;
     }
-    cerr << out.stats.to_str() << endl;
+    cerr << out.stats.to_string() << endl;
     retVal = 0;
   }
   catch(const std::exception& e)
   {
-    cerr << out.stats.to_str() << endl;
+    cerr << out.stats.to_string() << endl;
     cerr << "Error...: " << e.what() << endl;
     retVal = -1;
   }
@@ -316,39 +317,47 @@ int main(int argc, char* argv[])
 
 void local::show_usage(const char* _progName)
 {
-  cout << "Usage: " << _progName << " [options] [<json-file>|--stdin]" << endl
-       << "       Interactive mode: Requires either <json-file> or --stdin" << endl
-       << "       Pipe mode: Automatically reads from stdin" << endl
-       << "       Tip: It's a good practice to start relative paths with ./" << endl
-       << "            Example: ./myfile.json  ./config/config.json" << endl
-       << "Options: <key>[=<value>]" << endl
-       << "  <key>" << endl
-       << "  -h, --help                     Show this help message" << endl
-       << "      --stdin                    Read from stdin (interactive mode only)" << endl
-       << "  -d, --dup, --duplicate=<mode>  Duplicate key handling (mode: overwrite|ignore|append|reject)" << endl
-       << "                                 If omitted, it defaults to overwrite" << endl
-       << "  -k, --allow-flex-keys,         Allow unquoted object keys" << endl
-       << "      --allow-flexible-keys" << endl
-       << "  -s, --allow-flex-strings,      Allow unquoted string values" << endl
-       << "      --allow-flexible-strings" << endl
-       << "  -n, --allow-nocase,            Allow case-insensitive true/false/null" << endl
-       << "      --allow-nocase-values" << endl
-       << "  -o, --show-output[=<format>]   Show parsed JSON output (format: compact|pretty)" << endl
-       << "                                 If <format> is omitted, it defaults to compact" << endl
-       << "  -u, --use=<method>             Parsing method (method: mmap|string|file-buffer|string-buffer|file-stream|string-stream)" << endl
-       << "                                 mmap is valid only if <filename> is provided, for --stdin it switches to default" << endl
-       << "                                 If omitted, it defaults to " << endl
-       << "                                    * mmap for <filename>" << endl
-       << "                                    * string-stream for --stdin" << endl
-       << endl
-       << "Examples:" << endl
-       << "  " << _progName << " ./data.json               # Parse data.json file" << endl
-       << "  " << _progName << " --stdin                   # Read from stdin interactively" << endl
-       << "  " << _progName << " -o=pretty ./data.json     # Parse and show pretty output" << endl
-       << "  " << _progName << " -k -s ./data.json         # Allow flexible keys and strings" << endl
-       << "  " << _progName << " --dup=append ./data.json  # Append duplicate keys" << endl
-       << "  echo '{\"key\":\"value\"}' | " << _progName << "  # Parse from stdin (pipe)" << endl
-       << "  cat ./data.json | " << _progName << " -o      # Parse stdin (pipe) and show output" << endl;
+  const std::string usage =
+R"~(Usage: ${PNAME} [options] [<json-file>|--stdin]
+       Interactive mode: Requires either <json-file> or --stdin
+       Pipe mode: Automatically reads from stdin
+       Tip: It's a good practice to start relative paths with ./
+            Example: ./myfile.json  ./config/config.json
+Options: <key>[=<value>]
+  <key>
+  -h, --help                     Show this help message
+      --stdin                    Read from stdin (interactive mode only)
+  -d, --dup, --duplicate         Duplicate key handling
+      --duplicate-keys=<mode>      (mode: overwrite|ignore|append|reject)
+                                   If omitted, it defaults to overwrite
+  -k, --allow-flex-keys,         Allow unquoted object keys
+      --allow-flexible-keys
+  -s, --allow-flex-strings,      Allow unquoted string values
+      --allow-flexible-strings
+  -n, --allow-nocase,            Allow case-insensitive values for true, false, null
+      --allow-nocase-values         * True, TRUE, False, FALSE, Null, NULL
+  -o, --show-output[=<format>]   Show parsed JSON output
+                                   (format: compact|pretty)
+                                   If <format> is omitted, it defaults to compact
+  -u, --use=<method>             Parsing method to use
+                                   (method: mmap|string|file-buffer|string-buffer|file-stream|string-stream)
+                                   If omitted, it defaults to
+                                     * mmap for <filename>
+                                     * string-stream for --stdin
+                                   Note: mmap for --stdin is invalid and ignored
+Examples:
+  ${PNAME} ./data.json               # Parse data.json file
+  ${PNAME} --stdin                   # Read from stdin interactively
+  ${PNAME} -o=pretty ./data.json     # Parse and show pretty output
+  ${PNAME} -k -s ./data.json         # Allow flexible keys and strings
+  ${PNAME} --dup=append ./data.json  # Append duplicate keys
+  echo '{"key":"value"}' | ${PNAME}  # Parse from stdin (pipe)
+  cat ./data.json | ${PNAME}         # Parse from stdin (pipe)
+)~";
+
+  // Replace all instances of "${PNAME}"" with _progName and print it
+  std::regex pattern(R"(\$\{PNAME\})");  // Escape $ and {
+  cerr << std::regex_replace(usage, pattern, _progName);
 }
 
 std::string local::trim(const std::string& _str)
