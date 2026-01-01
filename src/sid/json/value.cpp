@@ -4,7 +4,7 @@ LICENSE: BEGIN
 @author Shan Anand
 @email anand.gs@gmail.com
 @source https://github.com/shan-anand
-@file json.cpp
+@file value.cpp
 @brief Json handling using c++
 ===============================================================================
 MIT License
@@ -33,7 +33,7 @@ LICENSE: END
 */
 
 /**
- * @file  json.cpp
+ * @file  value.cpp
  * @brief Implementation of json parser and handler
  */
 #include "json/value.h"

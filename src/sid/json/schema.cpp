@@ -4,7 +4,7 @@ LICENSE: BEGIN
 @author Shan Anand
 @email anand.gs@gmail.com
 @source https://github.com/shan-anand
-@file json.cpp
+@file schema.cpp
 @brief Json schema handling using c++
 ===============================================================================
 MIT License
